@@ -8,6 +8,9 @@ async function main() {
   await new Promise((resolve) => setImmediate(resolve));
 
   burnFor(durationMs);
+
+  // we need some time to notice that the block has finished
+  await new Promise((resolve) => setTimeout(() => resolve(), 100));
 }
 
 function burnFor(durationMs) {

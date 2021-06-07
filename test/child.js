@@ -18,7 +18,7 @@ function burnFor(durationMs) {
 
   while (Date.now() - start < durationMs) {
     let msg = '';
-    for (let i = 0; i < 1000000; ++i) {
+    for (let i = 0; i < 100000; ++i) {
       msg += i;
     }
     if (msg.includes('potato')) {

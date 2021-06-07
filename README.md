@@ -37,8 +37,7 @@ If you are on a Mac run `npm run prebuildify` commit a binary.
 
 
 ### Troubleshooting
-If you run into problems with `gyp: No Xcode or CLT version detected!`, you _may_ have a look at https://github.com/nodejs/node-gyp/blob/master/macOS_Catalina.md and try to follow it. No guarantees :-)
-Another thing you can try is to run `npm install node-gyp -g` and see if you can make it working by running `node-gyp configure`.
+If you run into problems with `gyp: No Xcode or CLT version detected!`, follow [instructions from node-gyp repo](https://github.com/nodejs/node-gyp/blob/master/macOS_Catalina.md#i-did-all-that-and-the-acid-test-still-does-not-pass--).
 
 
 ## Usage

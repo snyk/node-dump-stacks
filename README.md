@@ -104,6 +104,8 @@ inAnIndependentThread(async () => {
 });
 ```
 
+![architecture / data flow](architecture.jpg)
+
 
 ## Future work
  

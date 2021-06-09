@@ -9,9 +9,9 @@ describe('running the child', () => {
         stdio: ['ignore', 'inherit', 'pipe'],
         encoding: 'utf-8',
         env: {
-          DUMP_STACKS_OBSERVE_MS: '20',
-          DUMP_STACKS_CHECK_MS: '20',
-          DUMP_STACKS_REPORT_ONCE_MS: '200',
+          DUMP_STACKS_OBSERVE_MS: '10',
+          DUMP_STACKS_CHECK_MS: '10',
+          DUMP_STACKS_REPORT_ONCE_MS: '100',
         },
       },
     );
@@ -33,8 +33,8 @@ describe('running the child', () => {
       stack: expect.stringContaining('burnFor'),
     });
 
-    expect(lines[0].blockedMs).toBeGreaterThan(200);
-    expect(lines[0].blockedMs).toBeLessThan(300);
+    expect(lines[0].blockedMs).toBeGreaterThan(250);
+    expect(lines[0].blockedMs).toBeLessThan(500);
 
     expect(lines[1]).toMatchObject({
       name: 'dump-stacks',
@@ -42,8 +42,38 @@ describe('running the child', () => {
       stack: expect.stringContaining('burnFor'),
     });
 
-    expect(lines[1].blockedMs).toBeGreaterThan(200);
-    expect(lines[1].blockedMs).toBeLessThan(300);
+    expect(lines[1].blockedMs).toBeGreaterThan(250);
+    expect(lines[1].blockedMs).toBeLessThan(500);
+  });
+
+  it('captures total block time', async () => {
+    const child = spawnSync(
+      process.argv[0],
+      [require.resolve('./child'), '500'],
+      {
+        stdio: ['ignore', 'inherit', 'pipe'],
+        encoding: 'utf-8',
+        env: {
+          DUMP_STACKS_OBSERVE_MS: '10',
+          DUMP_STACKS_CHECK_MS: '10',
+          DUMP_STACKS_REPORT_ONCE_MS: '100',
+        },
+      },
+    );
+    if (child.error) {
+      throw child.error;
+    }
+    const prefix = '{"name":"dump-stacks"';
+    const lines = child.stderr
+      .split('\n')
+      .filter((line) => line.startsWith(prefix))
+      .map((line) => JSON.parse(line));
+
+    expect(lines).toHaveLength(2);
+    expect(lines[0].blockedMs).toBeGreaterThan(400);
+    expect(lines[0].blockedMs).toBeLessThan(800);
+    expect(lines[1].blockedMs).toBeGreaterThan(400);
+    expect(lines[1].blockedMs).toBeLessThan(800);
   });
 });
 

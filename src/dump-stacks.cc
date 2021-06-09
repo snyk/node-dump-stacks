@@ -18,34 +18,39 @@ static uint64_t report_after_block_time_ms = 1000;
 
 /// shared between the timer and the worker thread
 static std::atomic_uint64_t loop_last_alive_ms(0);
-/// has loop_last_alive_ms been reset since we last triggered an interrupt
-static std::atomic_bool observed_this_block(false);
-/// are we waiting for an interrupt to run (i.e. did we already trigger it)
-static std::atomic_bool disable_calling_interrupt(false);
+static std::atomic_uint64_t blocked_since_ms(0);
+static std::atomic_bool was_blocked(false);
 
-uint64_t block_estimate() { return wall_clock_time_ms() - loop_last_alive_ms; }
+// this isn't shared; only written/read from the interrupts
+// interrupts are assumed to be executed in order (which is currently true)
+static std::string last_stack = "";
 
-void interrupt_main(v8::Isolate *isolate, void *_data) {
-  const uint64_t loop_blocked_ms = block_estimate();
-  const std::string stack = current_stack_trace(isolate);
+void interrupt_capture(v8::Isolate *isolate, void *_data) {
+  last_stack = current_stack_trace(isolate);
+}
+
+void interrupt_dump(v8::Isolate *_isolate, void *_data) {
+  const uint64_t loop_blocked_ms = loop_last_alive_ms - blocked_since_ms;
 
   std::ostringstream out;
 
   out << R"({"name":"dump-stacks","message":"event loop blocked","blockedMs":)";
   out << loop_blocked_ms;
-  out << R"(,"stack":")" << escape_json_string(stack) << "\"";
+  out << R"(,"stack":")" << escape_json_string(last_stack) << "\"";
   out << "}";
 
   std::cerr << out.str() << std::endl;
-
-  disable_calling_interrupt = false;
 }
 
 [[noreturn]] void *worker_thread_main(void *unused) {
   for (;;) {
     uv_sleep(check_loop_every_ms);
 
-    if (disable_calling_interrupt || observed_this_block) {
+    if (was_blocked) {
+      if (blocked_since_ms != loop_last_alive_ms) {
+        was_blocked = false;
+        init_isolate->RequestInterrupt(interrupt_dump, nullptr);
+      }
       continue;
     }
 
@@ -54,16 +59,17 @@ void interrupt_main(v8::Isolate *isolate, void *_data) {
       continue;
     }
 
-    disable_calling_interrupt = true;
-    observed_this_block = true;
+    was_blocked = true;
 
-    init_isolate->RequestInterrupt(interrupt_main, nullptr);
+    // we need the cast to make it clear to the compiler we're only taking the value, 
+    // not expecting any thread safety
+    blocked_since_ms = static_cast<uint64_t>(loop_last_alive_ms);
+    init_isolate->RequestInterrupt(interrupt_capture, nullptr);
   }
 }
 
 void record_loop_times(uv_timer_t *timer) {
   loop_last_alive_ms = uv_now(timer->loop);
-  observed_this_block = false;
 }
 
 void Init(v8::Local<v8::Object> exports, v8::Local<v8::Value> _module,

@@ -8,6 +8,9 @@ async function main() {
   await new Promise((resolve) => setImmediate(resolve));
 
   burnFor(durationMs);
+
+  // we need some time to notice that the block has finished
+  await new Promise((resolve) => setTimeout(() => resolve(), 100));
 }
 
 function burnFor(durationMs) {
@@ -15,7 +18,7 @@ function burnFor(durationMs) {
 
   while (Date.now() - start < durationMs) {
     let msg = '';
-    for (let i = 0; i < 1000000; ++i) {
+    for (let i = 0; i < 100000; ++i) {
       msg += i;
     }
     if (msg.includes('potato')) {

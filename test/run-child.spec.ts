@@ -33,7 +33,7 @@ describe('running the child', () => {
       stack: expect.stringContaining('burnFor'),
     });
 
-    expect(lines[0].blockedMs).toBeGreaterThan(250);
+    expect(lines[0].blockedMs).toBeGreaterThan(250 - 10 - 10);
     expect(lines[0].blockedMs).toBeLessThan(500);
 
     expect(lines[1]).toMatchObject({
@@ -42,7 +42,7 @@ describe('running the child', () => {
       stack: expect.stringContaining('burnFor'),
     });
 
-    expect(lines[1].blockedMs).toBeGreaterThan(250);
+    expect(lines[1].blockedMs).toBeGreaterThan(250 - 10 - 10);
     expect(lines[1].blockedMs).toBeLessThan(500);
   });
 
@@ -75,6 +75,26 @@ describe('running the child', () => {
     expect(lines[1].blockedMs).toBeGreaterThan(400);
     expect(lines[1].blockedMs).toBeLessThan(800);
   });
+
+  it('ignores an import-time block', () => {
+    const child = spawnSync(
+      process.argv[0],
+      [require.resolve('./child-slow-import'), '500'],
+      {
+        stdio: ['ignore', 'inherit', 'pipe'],
+        encoding: 'utf-8',
+        env: {
+          DUMP_STACKS_OBSERVE_MS: '10',
+          DUMP_STACKS_CHECK_MS: '10',
+          DUMP_STACKS_REPORT_ONCE_MS: '100',
+        },
+      },
+    );
+    if (child.error) {
+      throw child.error;
+    }
+    expect(child.stderr).toEqual("");
+  })
 });
 
 async function success(child: ChildProcess) {

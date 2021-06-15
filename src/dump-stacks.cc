@@ -46,6 +46,9 @@ void interrupt_dump(v8::Isolate *_isolate, void *_data) {
   for (;;) {
     uv_sleep(check_loop_every_ms);
 
+    if (!loop_last_alive_ms)
+      continue;
+
     if (was_blocked) {
       if (blocked_since_ms != loop_last_alive_ms) {
         was_blocked = false;
@@ -61,8 +64,8 @@ void interrupt_dump(v8::Isolate *_isolate, void *_data) {
 
     was_blocked = true;
 
-    // we need the cast to make it clear to the compiler we're only taking the value, 
-    // not expecting any thread safety
+    // we need the cast to make it clear to the compiler we're only taking the
+    // value, not expecting any thread safety
     blocked_since_ms = static_cast<uint64_t>(loop_last_alive_ms);
     init_isolate->RequestInterrupt(interrupt_capture, nullptr);
   }
@@ -95,8 +98,6 @@ void Init(v8::Local<v8::Object> exports, v8::Local<v8::Value> _module,
                           observe_loop_timing_ms, observe_loop_timing_ms)) {
     return Nan::ThrowError("starting timer");
   }
-
-  loop_last_alive_ms = uv_now(loop_watcher_timer.loop);
 
   // prevent the timer from interfering with process shutdown
   uv_unref(reinterpret_cast<uv_handle_t *>(&loop_watcher_timer));

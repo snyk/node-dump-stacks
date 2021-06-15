@@ -1,6 +1,6 @@
-async function main() {
-  require('..');
+require('..');
 
+async function main() {
   const durationMs = parseInt(process.argv[2], 10);
 
   burnFor(durationMs);
@@ -27,7 +27,9 @@ function burnFor(durationMs) {
   }
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(2);
-});
+setImmediate(() =>
+  main().catch((err) => {
+    console.error(err);
+    process.exit(2);
+  }),
+);

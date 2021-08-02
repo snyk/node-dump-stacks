@@ -93,8 +93,8 @@ describe('running the child', () => {
     if (child.error) {
       throw child.error;
     }
-    expect(child.stderr).toEqual("");
-  })
+    expect(child.stderr).toEqual('');
+  });
 });
 
 async function success(child: ChildProcess) {

@@ -23,6 +23,12 @@ processing of sourcemaps is done, and no attempt is made to hide the node intern
 as it's after an `async` event.
 
 
+## Requirements
+
+ * a "modern" c++ toolchain installed, if you aren't on a supported platform
+   * note: `circle/node:14` images are no good, try `circle/node:14-buster` or newer
+
+
 ## Local development
 Node v12 or v14 is currently supported.
 

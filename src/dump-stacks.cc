@@ -1,5 +1,7 @@
 #include <atomic>
 #include <iostream>
+#include <iomanip>
+#include <ctime>
 
 #include <nan.h>
 
@@ -21,12 +23,22 @@ static std::atomic_uint64_t loop_last_alive_ms(0);
 static std::atomic_uint64_t blocked_since_ms(0);
 static std::atomic_bool was_blocked(false);
 
+// shared between timer and the printer
+static std::atomic_uint64_t notice_time(0);
+
 // this isn't shared; only written/read from the interrupts
 // interrupts are assumed to be executed in order (which is currently true)
 static std::string last_stack = "";
 
 void interrupt_capture(v8::Isolate *isolate, void *_data) {
   last_stack = current_stack_trace(isolate);
+}
+
+std::string to_iso_time(uint64_t when) {
+  std::time_t when_time = when;
+  std::ostringstream ss;
+  ss << std::put_time(std::gmtime(&when_time), "%FT%TZ");
+  return ss.str();
 }
 
 void interrupt_dump(v8::Isolate *_isolate, void *_data) {
@@ -36,6 +48,7 @@ void interrupt_dump(v8::Isolate *_isolate, void *_data) {
 
   out << R"({"name":"dump-stacks","message":"event loop blocked","blockedMs":)";
   out << loop_blocked_ms;
+  out << R"(,"noticeTime":")" << to_iso_time(notice_time) << "\"";
   out << R"(,"stack":")" << escape_json_string(last_stack) << "\"";
   out << "}";
 
@@ -61,6 +74,11 @@ void interrupt_dump(v8::Isolate *_isolate, void *_data) {
     if (loop_blocked_ms < report_after_block_time_ms) {
       continue;
     }
+
+    // record the wall-clock when we think the event loop stopped working, ish
+    // distinct from the uv_now() time, which is more accurate, but harder to
+    // convert to wall-clock time
+    notice_time = std::time(NULL);
 
     was_blocked = true;
 

@@ -1,7 +1,7 @@
 #include <atomic>
-#include <iostream>
-#include <iomanip>
 #include <ctime>
+#include <iomanip>
+#include <iostream>
 
 #include <nan.h>
 
@@ -52,7 +52,23 @@ void interrupt_dump(v8::Isolate *_isolate, void *_data) {
   out << R"(,"stack":")" << escape_json_string(last_stack) << "\"";
   out << "}";
 
-  std::cerr << out.str() << std::endl;
+  const std::string event_str = out.str();
+
+  const v8::Local<v8::Object> global = Nan::GetCurrentContext()->Global();
+  const v8::Local<v8::Context> context = global->CreationContext();
+  v8::MaybeLocal<v8::Value> maybe = global->Get(
+      context, Nan::New("NODE_DUMP_STACKS_CALLBACK").ToLocalChecked());
+  const v8::Local<v8::Function> callback =
+      maybe.ToLocalChecked().As<v8::Function>();
+
+  if (!callback->IsNullOrUndefined()) {
+    const unsigned argc = 1;
+    v8::Local<v8::Value> argv[argc] = {Nan::New(event_str).ToLocalChecked()};
+    Nan::AsyncResource resource("nan:makeCallback");
+    resource.runInAsyncScope(global, callback, argc, argv);
+  }
+
+  std::cerr << event_str << std::endl;
 }
 
 [[noreturn]] void *worker_thread_main(void *unused) {

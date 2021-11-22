@@ -6,7 +6,7 @@
     "install": "node-gyp-build",
     "build": "node-gyp configure && node-gyp build",
     "test": "jest",
-    "prebuildify": "prebuildify -t 12.18.2 -t 14.15.1",
+    "prebuildify": "prebuildify -t 14.15.1 -t 16.13.0",
     "format": "prettier --write '*.js' 'test/*.?s' '*.json' && clang-format -i src/*"
   },
   "dependencies": {

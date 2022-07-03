@@ -1,6 +1,4 @@
 version: 2.1
-orbs:
-  node: circleci/node@5.0.2
 
 defaults: &defaults
   resource_class: small
@@ -20,8 +18,9 @@ jobs:
     steps:
       - checkout
       - setup_snyk_user
-      - node/install-packages:
-          override-ci-command: install
+      - run:
+          name: Install
+          command: npm install
       - run:
           name: Build
           command: npm run build
@@ -42,8 +41,9 @@ jobs:
     steps:
       - checkout
       - setup_snyk_user
-      - node/install-packages:
-          override-ci-command: install
+      - run:
+          name: Install
+          command: npm install
       - run:
           name: Release on GitHub
           command: npx semantic-release@17

@@ -30,7 +30,7 @@ as it's after an `async` event.
 
 
 ## Local development
-Node v12 or v14 is currently supported.
+Node v14 or v16 is currently supported.
 
 ### Installation
 Run `npm install` as usual.

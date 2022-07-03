@@ -1,11 +1,11 @@
 version: 2.1
 orbs:
-  node: circleci/node@2.1.1
+  node: circleci/node@5.0.2
 
 defaults: &defaults
   resource_class: small
   docker:
-    - image: node:12-buster
+    - image: cimg/node:14.19
 
 commands:
   setup_snyk_user:
@@ -21,8 +21,7 @@ jobs:
       - checkout
       - setup_snyk_user
       - node/install-packages:
-          override-ci: true
-          cache-key: package.json
+          override-ci-command: install
       - run:
           name: Build
           command: npm run build
@@ -44,11 +43,10 @@ jobs:
       - checkout
       - setup_snyk_user
       - node/install-packages:
-          override-ci: true
-          cache-key: package.json
+          override-ci-command: install
       - run:
           name: Release on GitHub
-          command: npx semantic-release@16
+          command: npx semantic-release@17
 
 workflows:
   version: 2

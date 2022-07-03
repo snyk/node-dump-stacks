@@ -1,7 +1,7 @@
 #include <atomic>
-#include <iostream>
-#include <iomanip>
 #include <ctime>
+#include <iomanip>
+#include <iostream>
 
 #include <nan.h>
 

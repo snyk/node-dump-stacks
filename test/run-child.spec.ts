@@ -12,6 +12,7 @@ describe('running the child', () => {
           DUMP_STACKS_OBSERVE_MS: '10',
           DUMP_STACKS_CHECK_MS: '10',
           DUMP_STACKS_REPORT_ONCE_MS: '100',
+          DUMP_STACKS_IGNORE_INITIAL_SPINS: '0',
         },
       },
     );
@@ -57,6 +58,7 @@ describe('running the child', () => {
           DUMP_STACKS_OBSERVE_MS: '10',
           DUMP_STACKS_CHECK_MS: '10',
           DUMP_STACKS_REPORT_ONCE_MS: '100',
+          DUMP_STACKS_IGNORE_INITIAL_SPINS: '0',
         },
       },
     );
@@ -87,6 +89,7 @@ describe('running the child', () => {
           DUMP_STACKS_OBSERVE_MS: '10',
           DUMP_STACKS_CHECK_MS: '10',
           DUMP_STACKS_REPORT_ONCE_MS: '100',
+          DUMP_STACKS_IGNORE_INITIAL_SPINS: '0',
         },
       },
     );
@@ -95,16 +98,55 @@ describe('running the child', () => {
     }
     expect(child.stderr).toEqual('');
   });
-});
 
-async function success(child: ChildProcess) {
-  await new Promise<void>((resolve, reject) => {
-    child.on('error', reject);
-    child.on('exit', (code, signal) => {
-      if (0 !== code || signal) {
-        return reject(`exit status: ${code} / ${signal}`);
-      }
-      resolve();
-    });
+  it('ignores initial spins by default', () => {
+    const child = spawnSync(
+      process.argv[0],
+      [require.resolve('./child-initial-delays'), '200'],
+      {
+        stdio: ['ignore', 'inherit', 'pipe'],
+        encoding: 'utf-8',
+        env: {
+          DUMP_STACKS_OBSERVE_MS: '10',
+          DUMP_STACKS_CHECK_MS: '10',
+          DUMP_STACKS_REPORT_ONCE_MS: '100',
+        },
+      },
+    );
+    if (child.error) {
+      throw child.error;
+    }
+    const prefix = '{"name":"dump-stacks"';
+    const lines = child.stderr
+      .split('\n')
+      .filter((line) => line.startsWith(prefix))
+      .map((line) => JSON.parse(line));
+    expect(lines).toHaveLength(1);
   });
-}
+
+  it('can observe initial spins', () => {
+    const child = spawnSync(
+      process.argv[0],
+      [require.resolve('./child-initial-delays'), '200'],
+      {
+        stdio: ['ignore', 'inherit', 'pipe'],
+        encoding: 'utf-8',
+        env: {
+          DUMP_STACKS_OBSERVE_MS: '10',
+          DUMP_STACKS_CHECK_MS: '10',
+          DUMP_STACKS_REPORT_ONCE_MS: '100',
+          DUMP_STACKS_IGNORE_INITIAL_SPINS: '0',
+        },
+      },
+    );
+    if (child.error) {
+      throw child.error;
+    }
+    const prefix = '{"name":"dump-stacks"';
+    const lines = child.stderr
+      .split('\n')
+      .filter((line) => line.startsWith(prefix))
+      .map((line) => JSON.parse(line));
+    expect(lines).toHaveLength(2);
+  });
+});

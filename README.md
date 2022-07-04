@@ -62,15 +62,26 @@ although without enough metadata for `bunyan` to actually process them.
  * `DUMP_STACKS_OBSERVE_MS=100`: Record details about the event loop about this
      often.
  * `DUMP_STACKS_CHECK_MS=100`: Check up on the event loop about this often.
+ * `DUMP_STACKS_IGNORE_INITIAL_SPINS=1`: Wait for this many observations before
+     attempting to report blocks.
  * `DUMP_STACKS_ENABLED=false`: Do Nothing At All; don't even execute the native module
 
 The first value is up to you. Set it too low, and you will get a lot of reports,
 and a report has some overhead. Set it too high and you won't get any reports.
 One second is a *long* time.
 
-The other values would need to be lowered if you want to see blocks shorter than
+The other time values would need to be lowered if you want to see blocks shorter than
 those values, at the expense of being less efficient (although probably not
 measurably so!).
+
+`DUMP_STACKS_IGNORE_INITIAL_SPINS` should help ignore blocks which happen at
+startup time in an application, say a webserver, which are likely not interesting to
+overall application performance.  Set to `0` if you have a script, and you want to see
+all blocks after the initial `import`/`require`.
+
+The unit here is actual timer firings, so the defaults, `1` * `${DUMP_STACKS_OBSERVE_MS}`
+(`100ms`) means ignore blocks that happen in the first 100ms, *plus* however long it
+takes for the loop to spin once.
 
 
 ## How does it work?

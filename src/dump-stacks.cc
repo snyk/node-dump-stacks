@@ -18,6 +18,9 @@ static std::atomic_bool already_initialised(false);
 static uint64_t check_loop_every_ms = 100;
 static uint64_t report_after_block_time_ms = 1000;
 
+/// set in Init and updated/read only in timer
+static uint64_t ignore_initial_spins = 1;
+
 /// shared between the timer and the worker thread
 static std::atomic_uint64_t loop_last_alive_ms(0);
 static std::atomic_uint64_t blocked_since_ms(0);
@@ -90,6 +93,10 @@ void interrupt_dump(v8::Isolate *_isolate, void *_data) {
 }
 
 void record_loop_times(uv_timer_t *timer) {
+  if (ignore_initial_spins > 0) {
+    ignore_initial_spins -= 1;
+    return;
+  }
   loop_last_alive_ms = uv_now(timer->loop);
 }
 
@@ -106,6 +113,7 @@ void Init(v8::Local<v8::Object> exports, v8::Local<v8::Value> _module,
   check_loop_every_ms = getenv_u64_or("DUMP_STACKS_CHECK_MS", 100);
   report_after_block_time_ms =
       getenv_u64_or("DUMP_STACKS_REPORT_ONCE_MS", 1000);
+  ignore_initial_spins = getenv_u64_or("DUMP_STACKS_IGNORE_INITIAL_SPINS", 1);
 
   init_isolate = v8::Isolate::GetCurrent();
 

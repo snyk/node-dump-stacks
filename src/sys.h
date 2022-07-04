@@ -55,10 +55,14 @@ static uint64_t getenv_u64_or(const char *name, uint64_t fallback) {
     return fallback;
   }
 
-  const uint64_t val = std::strtoull(raw, nullptr, 10);
+  char *end;
+  const uint64_t val = std::strtoull(raw, &end, 10);
 
-  if (0 == val) {
-    return fallback;
+  if (0 == val && *end) {
+    std::stringstream ss;
+    ss << "invalid input for env var `" << name << "`: `" << raw << "`; had `"
+       << end << "` remaining.";
+    Nan::ThrowError(ss.str().c_str());
   }
 
   return val;

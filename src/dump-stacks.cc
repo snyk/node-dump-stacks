@@ -132,9 +132,17 @@ void Init(v8::Local<v8::Object> exports, v8::Local<v8::Value> _module,
     return;
   }
 
-  v8::Local<v8::Context> context = exports->CreationContext();
+  v8::Local<v8::Context> context =
+#if NODE_MAJOR_VERSION >= 16
+      // available from >= 16
+      exports->GetCreationContext().ToLocalChecked();
+#else
+      // deprecated in >=18
+      exports->CreationContext();
+#endif
+
   exports->Set(context, Nan::New("ready").ToLocalChecked(), Nan::New(true))
-      .Check();
+      .ToChecked();
 }
 
 NODE_MODULE(dump_stacks, Init)

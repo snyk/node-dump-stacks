@@ -25,34 +25,36 @@ as it's after an `async` event.
 
 ## Requirements
 
- * a "modern" c++ toolchain installed, if you aren't on a supported platform
-   * note: `circle/node:14` images are no good, try `circle/node:14-buster` or newer
-
-
-## Local development
-Node v14 or v16 is currently supported.
-
-### Installation
-Run `npm install` as usual.
-
-### Development
-Make your changes and run `npm run build`.
-
-### Releasing
-If you are on a Mac run `npm run prebuildify` commit a binary.
-
-
-### Troubleshooting
-If you run into problems with `gyp: No Xcode or CLT version detected!`, follow [instructions from node-gyp repo](https://github.com/nodejs/node-gyp/blob/master/macOS_Catalina.md#i-did-all-that-and-the-acid-test-still-does-not-pass--).
+ * a "modern" c++ toolchain installed (2019+ on linux)
+   * note: `circle/node:14` images are no good, try `cimg/node:14.20`
+       or `circle/node:14-buster` or, preferably, much newer
 
 
 ## Usage
 
-Load the module on start-up. It reads the environment, and starts immediately.
+Install the [npm package](@snyk/node-dump-stacks): `npm install --save @snyk/node-dump-stacks`.
+
+Load the module on start-up: `require('@snyk/node-dump-stacks');` (JS) or `import '@snyk/node-dump-stacks';` (ES/TS)
+
+It reads the environment, and starts immediately.
 
 It writes json lines to `stderr`, in a format similar to
 [`bunyan`](https://github.com/trentm/node-bunyan),
 although without enough metadata for `bunyan` to actually process them.
+
+
+## Local development
+Node v14, v16 and v18 are currently supported. Other versions are likely to work, PRs accepted.
+
+
+### Development
+Make your changes and run `npm run build` and `npm run test`.
+`npm run test` *does not* run a C++ build, so you must do so manually.
+
+
+### Troubleshooting
+If you run into problems with `gyp: No Xcode or CLT version detected!`, follow
+[instructions from node-gyp repo](https://github.com/nodejs/node-gyp/blob/master/macOS_Catalina.md#i-did-all-that-and-the-acid-test-still-does-not-pass--).
 
 
 ## Configuration

@@ -3,7 +3,7 @@ version: 2.1
 defaults: &defaults
   resource_class: small
   docker:
-    - image: cimg/node:14.19
+    - image: cimg/node:16.18
 
 commands:
   setup_snyk_user:

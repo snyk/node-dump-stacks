@@ -6,7 +6,6 @@
     "install": "node-gyp-build",
     "build": "node-gyp configure && node-gyp build",
     "test": "jest",
-    "prebuildify": "prebuildify -t 14.19.3 -t 16.15.1",
     "format": "prettier --write '*.js' 'test/*.?s' '*.json' && clang-format -i src/*"
   },
   "dependencies": {
@@ -21,7 +20,6 @@
     "jest": "^28.1.2",
     "node-gyp": "^9.0.0",
     "pino-pretty": "^9.1.1",
-    "prebuildify": "^5.0.0",
     "prettier": "~2.7.1"
   },
   "gypfile": true

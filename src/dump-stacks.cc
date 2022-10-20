@@ -2,6 +2,7 @@
 #include <ctime>
 #include <iomanip>
 #include <iostream>
+#include <unistd.h>
 
 #include <nan.h>
 
@@ -13,6 +14,7 @@
 static uv_timer_t loop_watcher_timer = {};
 static v8::Isolate *init_isolate = nullptr;
 static std::atomic_bool already_initialised(false);
+static std::string hostname_escaped;
 
 /// config; written in init and read from elsewhere
 static uint64_t check_loop_every_ms = 100;
@@ -37,8 +39,7 @@ void interrupt_capture(v8::Isolate *isolate, void *_data) {
   last_stack = current_stack_trace(isolate);
 }
 
-std::string to_iso_time(uint64_t when) {
-  std::time_t when_time = when;
+std::string to_iso_time(std::time_t when_time) {
   std::ostringstream ss;
   ss << std::put_time(std::gmtime(&when_time), "%FT%TZ");
   return ss.str();
@@ -49,10 +50,16 @@ void interrupt_dump(v8::Isolate *_isolate, void *_data) {
 
   std::ostringstream out;
 
-  out << R"({"name":"dump-stacks","message":"event loop blocked","blockedMs":)";
+  out << R"({"name":"dump-stacks","msg":"event loop blocked","blockedMs":)";
   out << loop_blocked_ms;
   out << R"(,"noticeTime":")" << to_iso_time(notice_time) << "\"";
-  out << R"(,"stack":")" << escape_json_string(last_stack) << "\"";
+  out << R"(,"stack":")" << escape_json_string(last_stack) << "\",";
+
+  // Extras just to make the "bunyan" protocol happy
+  // I expect most people are ignoring this data
+  out << R"("v":0,"hostname":")" << hostname_escaped << "\",";
+  out << R"("level":40,"pid":)" << getpid() << ",";
+  out << R"("time":")" << to_iso_time(std::time(nullptr)) << "\"";
   out << "}";
 
   std::cerr << out.str() << std::endl;
@@ -130,6 +137,14 @@ void Init(v8::Local<v8::Object> exports, v8::Local<v8::Value> _module,
 
   if (!create_thread(worker_thread_main)) {
     return;
+  }
+
+  {
+    char buf[256] = {};
+    int valid_len = gethostname(buf, (sizeof buf) - 1);
+    if (valid_len > 0) {
+      hostname_escaped = escape_json_string(std::string(buf, valid_len));
+    }
   }
 
   v8::Local<v8::Context> context =

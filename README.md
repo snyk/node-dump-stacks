@@ -39,8 +39,7 @@ Load the module on start-up: `require('@snyk/node-dump-stacks');` (JS) or `impor
 It reads the environment, and starts immediately.
 
 It writes json lines to `stderr`, in a format similar to
-[`bunyan`](https://github.com/trentm/node-bunyan),
-although without enough metadata for `bunyan` to actually process them.
+[`bunyan`](https://github.com/trentm/node-bunyan) / [`pino`](https://github.com/pinojs/pino).
 
 
 ## Local development

@@ -17,8 +17,10 @@
     "@babel/preset-env": "^7.13.5",
     "@babel/preset-typescript": "^7.13.0",
     "@types/jest": "^28.1.4",
+    "bunyan": "^1.8.15",
     "jest": "^28.1.2",
     "node-gyp": "^9.0.0",
+    "pino-pretty": "^9.1.1",
     "prebuildify": "^5.0.0",
     "prettier": "~2.7.1"
   },

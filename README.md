@@ -11,16 +11,14 @@ There's a test program in `test/child.js` which intentionally blocks up for the
 specified number of ms, you can run it like this:
 
 ```
-% node test/child.js 1100
-{"name":"dump-stacks","blockedMs":1042,"stack":"burnFor (/foo/test/child.js:18:5)\nmain (/foo/test/child.js:6:3)\n/foo/test/child.js:27:1\nModule._compile (internal/modules/cjs/loader.js:1138:30)\n[..]run_main_module.js:17:47\n"}
-{"name":"dump-stacks","blockedMs":1100,"stack":"burnFor (/foo/test/child.js:18:5)\nmain (/foo/test/child.js:10:3)\n"}
+% node test/child-initial-delays.js 1200
+{"name":"dump-stacks","blockedMs":1203,"stack":"burnFor (/foo/test/child-initial-delays.js:22:5)\n/foo/test/child-initial-delays.js:12:3\n"}
 ```
 
 The default, without configuration, is to alert on blocks for more than a second
 (1,000ms), which show up here. You can see the very raw javascript stacks; no
 processing of sourcemaps is done, and no attempt is made to hide the node internals.
-`async` stack traces are not processed, which means the second stack is shorter,
-as it's after an `async` event.
+`async` stack traces are not processed.
 
 
 ## Requirements

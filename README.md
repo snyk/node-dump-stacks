@@ -39,6 +39,12 @@ It reads the environment, and starts immediately.
 It writes json lines to `stderr`, in a format similar to
 [`bunyan`](https://github.com/trentm/node-bunyan) / [`pino`](https://github.com/pinojs/pino).
 
+As this is a native module, it is sensitive to `node` build and runtime versions. That is, you cannot build on one
+version, then run on a different version, and you cannot build on one platform and run on another.
+There are no binaries available for this package, either in the source, in the npm package, or in THE CLOUD.
+If you are struggling with CI vs. docker image, consider adding `npm rebuild` to your `Dockerfile`, which will
+isolate your production build from your CI build.
+
 
 ## Local development
 Node v14, v16 and v18 are currently supported. Other versions are likely to work, PRs accepted.

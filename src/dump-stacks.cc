@@ -23,6 +23,8 @@ static uint64_t report_after_block_time_ms = 1000;
 /// set in Init and updated/read only in timer
 static uint64_t ignore_initial_spins = 1;
 
+static bool write_to_stdout_enabled = false;
+
 /// shared between the timer and the worker thread
 static std::atomic_uint64_t loop_last_alive_ms(0);
 static std::atomic_uint64_t blocked_since_ms(0);
@@ -62,7 +64,11 @@ void interrupt_dump(v8::Isolate *_isolate, void *_data) {
   out << R"("time":")" << to_iso_time(std::time(nullptr)) << "\"";
   out << "}";
 
-  std::cerr << out.str() << std::endl;
+  if (write_to_stdout_enabled) {
+    std::cout << out.str() << std::endl;
+  } else {
+    std::cerr << out.str() << std::endl;
+  }
 }
 
 [[noreturn]] void *worker_thread_main(void *unused) {
@@ -121,6 +127,7 @@ void Init(v8::Local<v8::Object> exports, v8::Local<v8::Value> _module,
   report_after_block_time_ms =
       getenv_u64_or("DUMP_STACKS_REPORT_ONCE_MS", 1000);
   ignore_initial_spins = getenv_u64_or("DUMP_STACKS_IGNORE_INITIAL_SPINS", 1);
+  write_to_stdout_enabled = std::getenv("DUMP_STACKS_STDOUT_OUTPUT");
 
   init_isolate = v8::Isolate::GetCurrent();
 

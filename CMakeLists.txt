@@ -12,9 +12,9 @@ include_directories(
         node_modules/nan
         # this is created by `npm run install`, on the `.nvmrc` specified node version
         # the version is not otherwise important
-        $ENV{HOME}/.cache/node-gyp/18.14.0/include/node)
+        $ENV{HOME}/.cache/node-gyp/18.19.0/include/node)
 
-add_executable(node_dump_stacks
+add_library(node_dump_stacks SHARED
         src/dump-stacks.cc
         src/stacks.h
         src/stringify.h

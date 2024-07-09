@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  prodsec: snyk/prodsec-orb@1
+
 defaults: &defaults
   resource_class: small
   docker:
@@ -52,6 +55,16 @@ workflows:
   version: 2
   test:
     jobs:
+      - prodsec/secrets-scan:
+          name: Scan repository for secrets
+          context:
+            - snyk-bot-slack
+          channel: alerts-app-sec
+          trusted-branch: main
+          filters:
+            branches:
+              ignore:
+                - main    
       - test:
           name: Test
           context: nodejs-install

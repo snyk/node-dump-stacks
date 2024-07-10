@@ -69,7 +69,7 @@ If you run into problems with `gyp: No Xcode or CLT version detected!`, follow
  * `DUMP_STACKS_CHECK_MS=100`: Check up on the event loop about this often.
  * `DUMP_STACKS_IGNORE_INITIAL_SPINS=1`: Wait for this many observations before
      attempting to report blocks.
- * `DUMP_STACKS_OUTPUT_STDOUT=1`: Output blocked event loop logs to stdout. Defaults to stderr.
+ * `DUMP_STACKS_STDOUT_OUTPUT=1`: Output blocked event loop logs to stdout. Defaults to stderr.
  * `DUMP_STACKS_ENABLED=false`: Do Nothing At All; don't even execute the native module
 
 The first value is up to you. Set it too low, and you will get a lot of reports,

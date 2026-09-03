@@ -6,13 +6,13 @@ orbs:
 defaults: &defaults
   resource_class: small
   docker:
-    - image: cimg/node:18.19
+    - image: cimg/node:22.14
 
 commands:
-  setup_snyk_user:
+  setup_npm_auth:
     steps:
       - run:
-          name: Use snyk-main npmjs user
+          name: Setup NPM auth
           command: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
 
 jobs:
@@ -20,7 +20,7 @@ jobs:
     <<: *defaults
     steps:
       - checkout
-      - setup_snyk_user
+      - setup_npm_auth
       - run:
           name: Install
           command: npm install
@@ -43,13 +43,15 @@ jobs:
     <<: *defaults
     steps:
       - checkout
-      - setup_snyk_user
+      - setup_npm_auth
       - run:
           name: Install
           command: npm install
       - run:
-          name: Release on GitHub
-          command: npx semantic-release@17
+          name: Release
+          command: |
+            export NPM_ID_TOKEN=$(circleci run oidc get --claims '{"aud": "npm:registry.npmjs.org"}')
+            npx semantic-release
 
 workflows:
   version: 2
@@ -77,7 +79,9 @@ workflows:
     jobs:
       - release:
           name: Release
-          context: nodejs-lib-release
+          context:
+            - nodejs-install
+            - github-release
           filters:
             branches:
               only:
